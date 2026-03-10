@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>趣味人格测试 - 测测你是哪种动物人格</title>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --orange: #FF7A29;
+            --orange-light: #FF9A5C;
+            --cream: #F9F3E7;
+            --gray: #666666;
+            --gray-light: #EEEEEE;
+            --white: #FFFFFF;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --radius: 12px;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--cream);
+            color: var(--gray);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* 容器样式 */
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-top: 50px;
+        }
+
+        /* 标题样式 */
+        .title {
+            color: var(--orange);
+            text-align: center;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--gray);
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        /* 进度条 */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: var(--gray-light);
+            border-radius: 4px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--orange);
+            width: 0%;
+            transition: var(--transition);
+        }
+
+        /* 题目样式 */
+        .question-container {
+            display: none;
+        }
+
+        .question-container.active {
+            display: block;
+        }
+
+        .question-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .option-btn {
+            padding: 15px 20px;
+            border: 2px solid var(--gray-light);
+            border-radius: var(--radius);
+            background: var(--white);
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+        }
+
+        .option-btn:hover {
+            border-color: var(--orange-light);
+            background: rgba(255, 122, 41, 0.05);
+        }
+
+        .option-btn.selected {
+            border-color: var(--orange);
+            background: rgba(255, 122, 41, 0.1);
+        }
+
+        /* 上下题按钮样式 */
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border: 2px solid var(--orange);
+            border-radius: var(--radius);
+            background: var(--white);
+            color: var(--orange);
+            font-size: 14px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .nav-btn:hover {
+            background: rgba(255, 122, 41, 0.05);
+        }
+
+        .nav-btn:disabled {
+            border-color: var(--gray-light);
+            color: var(--gray-light);
+            cursor: not-allowed;
+            background: var(--white);
+        }
+
+        .next-btn, .result-btn {
+            background: var(--orange);
+            color: var(--white);
+            border-color: var(--orange);
+        }
+
+        .next-btn:hover:not(:disabled), .result-btn:hover:not(:disabled) {
+            background: var(--orange-light);
+        }
+
+        /* 结果页样式 */
+        .result-container {
+            display: none;
+            text-align: center;
+        }
+
+        .result-container.active {
+            display: block;
+        }
+
+        .result-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 22px;
+            color: var(--orange);
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .result-desc {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .copy-btn {
+            background: var(--orange);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius);
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: var(--orange-light);
+        }
+
+        .restart-btn {
+            background: var(--white);
+            color: var(--orange);
+            border: 2px solid var(--orange);
+            border-radius: var(--radius);
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 15px;
+        }
+
+        .restart-btn:hover {
+            background: rgba(255, 122, 41, 0.05);
+        }
+
+        .copy-tip {
+            color: #28a745;
+            font-size: 14px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+                margin-top: 20px;
+            }
+
+            .title {
+                font-size: 20px;
+            }
+
+            .question-title {
+                font-size: 16px;
+            }
+
+            .option-btn {
+                font-size: 14px;
+                padding: 12px 15px;
+            }
+
+            .nav-btn {
+                padding: 8px 15px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">趣味人格测试</h1>
+        <p class="subtitle">测测你是老黄牛、狮子还是狐狸？</p>
+        
+        <!-- 进度条 -->
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+
+        <!-- 题目1 -->
+        <div class="question-container active" id="q1">
+            <h2 class="question-title">1. 周末突然被安排加班，你的第一反应是？</h2>
+            <div class="options">
+                <button class="option-btn" onclick="selectAnswer(1, 'A')">A. 唉，认命吧，该做还是得做</button>
+                <button class="option-btn" onclick="selectAnswer(1, 'B')">B. 直接拒绝，我的休息时间神圣不可侵犯</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn prev-btn" onclick="navigateQuestion(-1)" disabled>上一题</button>
+                <button class="nav-btn next-btn" onclick="navigateQuestion(1)">下一题</button>
+            </div>
+        </div>
+
+        <!-- 题目2 -->
+        <div class="question-container" id="q2">
+            <h2 class="question-title">2. 团队项目获奖，奖金该怎么分？</h2>
+            <div class="options">
+                <button class="option-btn" onclick="selectAnswer(2, 'A')">A. 大家平分就好，和气最重要</button>
+                <button class="option-btn" onclick="selectAnswer(2, 'B')">B. 我贡献最多，必须拿大头，凭什么委屈自己</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn prev-btn" onclick="navigateQuestion(-1)">上一题</button>
+                <button class="nav-btn next-btn" onclick="navigateQuestion(1)">下一题</button>
+            </div>
+        </div>
+
+        <!-- 题目3 -->
+        <div class="question-container" id="q3">
+            <h2 class="question-title">3. 遇到难搞的客户，你会？</h2>
+            <div class="options">
+                <button class="option-btn" onclick="selectAnswer(3, 'A')">A. 耐心沟通，想尽办法满足对方需求</button>
+                <button class="option-btn" onclick="selectAnswer(3, 'B')">B. 找到对方的弱点，用巧劲搞定，不硬碰硬</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn prev-btn" onclick="navigateQuestion(-1)">上一题</button>
+                <button class="nav-btn next-btn" onclick="navigateQuestion(1)">下一题</button>
+            </div>
+        </div>
+
+        <!-- 题目4 -->
+        <div class="question-container" id="q4">
+            <h2 class="question-title">4. 朋友找你借钱，你其实不太想借，会？</h2>
+            <div class="options">
+                <button class="option-btn" onclick="selectAnswer(4, 'A')">A. 不好意思拒绝，硬着头皮借出去</button>
+                <button class="option-btn" onclick="selectAnswer(4, 'B')">B. 找个合理的借口，既不得罪人也不用借钱</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn prev-btn" onclick="navigateQuestion(-1)">上一题</button>
+                <button class="nav-btn next-btn" onclick="navigateQuestion(1)">下一题</button>
+            </div>
+        </div>
+
+        <!-- 题目5 -->
+        <div class="question-container" id="q5">
+            <h2 class="question-title">5. 职场晋升机会来了，你会？</h2>
+            <div class="options">
+                <button class="option-btn" onclick="selectAnswer(5, 'A')">A. 默默努力，相信是金子总会发光</button>
+                <button class="option-btn" onclick="selectAnswer(5, 'B')">B. 主动争取，展示自己的能力和成果</button>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn prev-btn" onclick="navigateQuestion(-1)">上一题</button>
+                <button class="nav-btn result-btn" onclick="calculateResult()">查看结果</button>
+            </div>
+        </div>
+
+        <!-- 结果区域 -->
+        <div class="result-container" id="result">
+            <div class="result-icon" id="resultIcon">🦊</div>
+            <h2 class="result-title" id="resultTitle">你是机智的狐狸！</h2>
+            <p class="result-desc" id="resultDesc">
+                你脑子转得比谁都快，遇事不硬碰硬，总能用最聪明的方式解决问题。看似不争不抢，实则早就把一切算得明明白白。不过偶尔也别太精明啦，有时候简单点反而更快乐～
+            </p>
+            <button class="copy-btn" onclick="copyResult()">一键复制结果</button>
+            <p class="copy-tip" id="copyTip">复制成功！</p>
+            <button class="restart-btn" onclick="restartTest()">重新测试</button>
+        </div>
+    </div>
+
+    <script>
+        // 存储用户答案
+        let userAnswers = [];
+        let currentQuestion = 1;
+        const totalQuestions = 5;
+
+        // 选择答案
+        function selectAnswer(questionNum, answer) {
+            // 存储答案
+            userAnswers[questionNum - 1] = answer;
+            
+            // 标记已选答案的按钮
+            const options = document.querySelectorAll(`#q${questionNum} .option-btn`);
+            options.forEach(btn => {
+                btn.classList.remove('selected');
+                if (btn.textContent.startsWith(answer)) {
+                    btn.classList.add('selected');
+                }
+            });
+            
+            // 更新进度条
+            updateProgress();
+        }
+
+        // 导航题目（上一题/下一题）
+        function navigateQuestion(direction) {
+            // 隐藏当前题目
+            document.getElementById(`q${currentQuestion}`).classList.remove('active');
+            
+            // 计算新的题目编号
+            currentQuestion += direction;
+            
+            // 显示新题目
+            document.getElementById(`q${currentQuestion}`).classList.add('active');
+            
+            // 更新进度条
+            updateProgress();
+            
+            // 更新导航按钮状态
+            updateNavButtons();
+            
+            // 恢复已选答案的高亮状态
+            restoreSelectedAnswers();
+        }
+
+        // 更新进度条
+        function updateProgress() {
+            const progress = (currentQuestion / totalQuestions) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        // 更新导航按钮状态（禁用/启用）
+        function updateNavButtons() {
+            // 遍历所有题目
+            for (let i = 1; i <= totalQuestions; i++) {
+                const prevBtn = document.querySelector(`#q${i} .prev-btn`);
+                // 第一题禁用上一题
+                if (prevBtn) prevBtn.disabled = (i === 1);
+            }
+        }
+
+        // 恢复已选答案的高亮状态
+        function restoreSelectedAnswers() {
+            for (let i = 1; i <= totalQuestions; i++) {
+                const answer = userAnswers[i - 1];
+                if (answer) {
+                    const options = document.querySelectorAll(`#q${i} .option-btn`);
+                    options.forEach(btn => {
+                        btn.classList.remove('selected');
+                        if (btn.textContent.startsWith(answer)) {
+                            btn.classList.add('selected');
+                        }
+                    });
+                }
+            }
+        }
+
+        // 计算测试结果
+        function calculateResult() {
+            // 检查是否所有题目都已作答
+            if (userAnswers.length < totalQuestions || userAnswers.some(ans => !ans)) {
+                alert('请完成所有题目后再查看结果！');
+                return;
+            }
+            
+            // 统计A/B选项数量
+            const aCount = userAnswers.filter(ans => ans === 'A').length;
+            const bCount = userAnswers.filter(ans => ans === 'B').length;
+            
+            let resultType = '';
+            let icon = '';
+            let title = '';
+            let desc = '';
+
+            // 判断结果类型
+            if (aCount >= 4) {
+                // 老黄牛
+                resultType = '老黄牛';
+                icon = '🐂';
+                title = `你是踏实的${resultType}！`;
+                desc = `你是团队里最靠谱的存在，做事任劳任怨，从不抱怨。别人偷懒摸鱼的时候，你还在默默干活。虽然偶尔会吃点小亏，但你的踏实和坚持，早晚都会被看见！不过也别太委屈自己，该争取的权益也要说出来～`;
+            } else if (bCount >= 4) {
+                // 狮子
+                resultType = '狮子';
+                icon = '🦁';
+                title = `你是霸气的${resultType}！`;
+                desc = `你天生自带王者气场，有野心、有能力，从不甘心屈居人下。遇到机会会主动出击，遇到不公也敢直接说不。虽然偶尔会显得有点强势，但你的果断和魄力，总能让你成为人群中的焦点！稍微收敛一点锋芒，会有更多人愿意靠近你～`;
+            } else {
+                // 狐狸
+                resultType = '狐狸';
+                icon = '🦊';
+                title = `你是机智的${resultType}！`;
+                desc = `你脑子转得比谁都快，遇事不硬碰硬，总能用最聪明的方式解决问题。看似不争不抢，实则早就把一切算得明明白白。不过偶尔也别太精明啦，有时候简单点反而更快乐～`;
+            }
+
+            // 更新结果页面
+            document.getElementById('resultIcon').textContent = icon;
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultDesc').textContent = desc;
+            
+            // 显示结果页
+            document.getElementById(`q${currentQuestion}`).classList.remove('active');
+            document.getElementById('result').classList.add('active');
+        }
+
+        // 复制结果
+        function copyResult() {
+            const resultTitle = document.getElementById('resultTitle').textContent;
+            const resultDesc = document.getElementById('resultDesc').textContent;
+            const fullResult = `${resultTitle}\n${resultDesc}`;
+
+            // 复制到剪贴板
+            navigator.clipboard.writeText(fullResult).then(() => {
+                const copyTip = document.getElementById('copyTip');
+                copyTip.style.display = 'block';
+                
+                // 3秒后隐藏提示
+                setTimeout(() => {
+                    copyTip.style.display = 'none';
+                }, 3000);
+            }).catch(err => {
+                alert('复制失败，请手动复制！');
+                console.error('复制失败:', err);
+            });
+        }
+
+        // 重新测试
+        function restartTest() {
+            // 重置状态
+            userAnswers = [];
+            currentQuestion = 1;
+            
+            // 重置进度条
+            document.getElementById('progressBar').style.width = '0%';
+            
+            // 隐藏结果页，显示第一题
+            document.getElementById('result').classList.remove('active');
+            document.getElementById('q1').classList.add('active');
+            
+            // 隐藏所有其他题目
+            for (let i = 2; i <= totalQuestions; i++) {
+                document.getElementById(`q${i}`).classList.remove('active');
+            }
+            
+            // 清除所有选中状态
+            const allOptions = document.querySelectorAll('.option-btn');
+            allOptions.forEach(btn => btn.classList.remove('selected'));
+            
+            // 更新导航按钮状态
+            updateNavButtons();
+        }
+
+        // 初始化导航按钮状态
+        updateNavButtons();
+    </script>
+</body>
+</html>
